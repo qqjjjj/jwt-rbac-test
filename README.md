@@ -9,7 +9,7 @@ A Node.js/TypeScript backend demonstrating JWT authentication and Role-Based Acc
 pnpm install
 
 # Start PostgreSQL
-docker-compose up -d
+docker compose up -d
 
 # Generate password hashes
 node scripts/update-passwords.js
