@@ -1,0 +1,143 @@
+### RBAC Management API Tests
+### Use with REST Client extension in VS Code
+
+@baseUrl = http://localhost:3000
+@adminToken = YOUR_ADMIN_TOKEN_HERE
+@userToken = YOUR_USER_TOKEN_HERE
+
+### ============================================
+### 1. Get all permissions (ADMIN only)
+### ============================================
+GET {{baseUrl}}/api/permissions
+Authorization: Bearer {{adminToken}}
+
+### ============================================
+### 2. Get permissions for USER role on sales_campaign
+### ============================================
+GET {{baseUrl}}/api/permissions/USER/sales_campaign
+Authorization: Bearer {{adminToken}}
+
+### ============================================
+### 3. Get permissions for ADMIN role on sales_campaign
+### ============================================
+GET {{baseUrl}}/api/permissions/ADMIN/sales_campaign
+Authorization: Bearer {{adminToken}}
+
+### ============================================
+### 4. Set single permission - Allow USER to see budget
+### ============================================
+PUT {{baseUrl}}/api/permissions
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "USER",
+  "table_name": "sales_campaign",
+  "column_name": "budget",
+  "can_read": true
+}
+
+### ============================================
+### 5. Verify USER can now see budget
+### ============================================
+GET {{baseUrl}}/api/campaigns
+Authorization: Bearer {{userToken}}
+
+### ============================================
+### 6. Set single permission - Hide budget from USER again
+### ============================================
+PUT {{baseUrl}}/api/permissions
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "USER",
+  "table_name": "sales_campaign",
+  "column_name": "budget",
+  "can_read": false
+}
+
+### ============================================
+### 7. Verify USER cannot see budget anymore
+### ============================================
+GET {{baseUrl}}/api/campaigns
+Authorization: Bearer {{userToken}}
+
+### ============================================
+### 8. Bulk set permissions for USER
+### ============================================
+POST {{baseUrl}}/api/permissions/bulk
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "USER",
+  "table_name": "sales_campaign",
+  "columns": [
+    { "columnName": "id", "canRead": true },
+    { "columnName": "name", "canRead": true },
+    { "columnName": "budget", "canRead": false },
+    { "columnName": "start_date", "canRead": true },
+    { "columnName": "end_date", "canRead": true },
+    { "columnName": "created_by", "canRead": true },
+    { "columnName": "created_at", "canRead": true },
+    { "columnName": "updated_at", "canRead": true }
+  ]
+}
+
+### ============================================
+### 9. Delete a specific permission
+### ============================================
+DELETE {{baseUrl}}/api/permissions
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "USER",
+  "table_name": "sales_campaign",
+  "column_name": "start_date"
+}
+
+### ============================================
+### 10. Delete all permissions for USER/sales_campaign
+### ============================================
+DELETE {{baseUrl}}/api/permissions/USER/sales_campaign
+Authorization: Bearer {{adminToken}}
+
+### ============================================
+### 11. USER tries to manage permissions (should fail 403)
+### ============================================
+GET {{baseUrl}}/api/permissions
+Authorization: Bearer {{userToken}}
+
+### ============================================
+### 12. Set permission with invalid role (should fail 400)
+### ============================================
+PUT {{baseUrl}}/api/permissions
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "INVALID_ROLE",
+  "table_name": "sales_campaign",
+  "column_name": "budget",
+  "can_read": true
+}
+
+### ============================================
+### 13. Example: Add permissions for a new table (products)
+### ============================================
+POST {{baseUrl}}/api/permissions/bulk
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "USER",
+  "table_name": "products",
+  "columns": [
+    { "columnName": "id", "canRead": true },
+    { "columnName": "name", "canRead": true },
+    { "columnName": "price", "canRead": true },
+    { "columnName": "cost", "canRead": false }
+  ]
+}
